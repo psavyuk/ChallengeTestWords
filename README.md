@@ -1,22 +1,34 @@
-# ChallengeTestWords
-The code challenge (Frequency words)
+Frequency words app
 
-1) Create a Python web application using Tornado web server and host it as an App Engine project on Google.
+    This application bases on Tornado Web Server. 
+Modules:
+- crawler - main worker performs all work related with grubbing and preparint data.
+- db - performs db operation like READ, INSERT, UPDATE
+- utils - useful functions(encrypt_RSA, decrypt_RSA, generate_salt_hash) 
+- generate_pem - generates a pem key
+- app - Tornado Web Server
 
-2) The project should have a single page with a form where I can enter a URL to any website (e.g. Wikipedia or BBCNews)
+Main workflow:
+When you go to localhost(IP, host):8888/ You will get a chance to insert a data(URL) in appropriate format like(http(s)://abc.abc) otherwise You will get a message that your URL is an incorrect. When you entered correct URL, browser will send post request to the server withit. Backend part(crawler) will get this URL and read all raw data from it, after that using beautiful soup module deletes all useless for crawler data like scripts,
+css and html tags and counts all words. Returns wrapped data to the UI and stores into DataBase. On UI You will get table with the most frequently used words and counters sorting by DESC.
 
-3) The application should fetch that url and build a dictionary that contains the frequency of use of each word on that page.
+Stored data to the DataBase:
+1. Created words_tbl table:
+mysql> desc words_tbl;
++----------------+-----------+------+-----+---------+-------+
+| Field          | Type      | Null | Key | Default | Extra |
++----------------+-----------+------+-----+---------+-------+
+| word_hash      | char(128) | NO   | PRI | NULL    |       |
+| word_encrypted | text      | NO   |     | NULL    |       |
+| word_frequency | int(11)   | NO   |     | NULL    |       |
++----------------+-----------+------+-----+---------+-------+
+3 rows in set (0.16 sec)
 
-4) Use this dictionary to display, on the client’s browser, a “word cloud” of the top 100 words, where the font size is largest for the words used most frequently, and gets progressively smaller for words used less often.
+word_hash will contain salted word hash(The primary key for the word is a salted hash of the word.)
+word_encrypted will contain RSA encrypted word(UTF-8)(The word itself is saved in a column that has asymmetrical encryption, and you are saving the encrypted version of the word.)
+word_frequency will contain integer value - counter(The total frequency count of the word).
 
-5) Each time a URL is fetched, it should save the top 100 words to a MySQL DB (Google Cloud SQL), with the following three columns:
+Crawler can perform only READ, CREATE, UPDATE operations. Notice: DELETE is strongly PROHIBITED.
 
-   a) The primary key for the word is a salted hash of the word.
-
-   b) The word itself is saved in a column that has asymmetrical encryption, and you are saving the encrypted version of the word.
-
-   c) The total frequency count of the word.
-
-Each time a new URL is fetched, you should INSERT or UPDATE the word rows.
-
-6) An “admin” page, that will list all words entered into the DB, ordered by frequency of usage, visible in decrypted form.
+When you go to localhost(IP, host):8888/admin page.
+The “admin” page, that will list all words entered into the DB, ordered by frequency of usage, visible in decrypted form.

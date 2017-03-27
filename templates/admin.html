@@ -1,0 +1,19 @@
+<html>
+   <head>
+      <title>All words</title>
+   </head>
+   <body>
+<table border="1">
+  <tr>
+      <td><b>Word</b></td>
+      <td><b>Counter</b></td>
+  </tr>
+  {% for key in items %}
+	<tr>
+            <td><b>{{ key }}</b></td>
+	    <td><b>{{ items[key] }}</b></td>
+        </tr>
+  {% end %} 
+</table>
+   </body>
+ </html>

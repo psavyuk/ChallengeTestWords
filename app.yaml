@@ -1,0 +1,22 @@
+#entrypoint: python main.py
+#env: flex
+#runtime: python
+
+runtime: python27
+api_version: 1
+threadsafe: yes
+
+handlers:
+- url: /.*
+  script: main
+
+libraries:
+- name: MySQLdb
+  version: "latest"
+
+# [START env_variables]
+env_variables:
+    CLOUDSQL_CONNECTION_NAME: thecodechallenge-162810:us-central1:wordschallengenew 
+    CLOUDSQL_USER: dev
+    CLOUDSQL_PASSWORD: password
+# [END env_variables]

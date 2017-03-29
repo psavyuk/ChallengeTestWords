@@ -3,15 +3,8 @@
 This module responsible for collaborations between app and db.
 """
 
-import MySQLdb
-
+import os
 import utils
-
-
-DBCONN = MySQLdb.connect(host='localhost',
-                         db='wordschallenge',
-                         user='dev',
-                         passwd='password')
 
 
 def dbwrap(func):
@@ -71,7 +64,7 @@ def update_word(cursor, word_frequency, word_hash):
     cursor.execute(query, (word_frequency, word_hash))
 
 
-def manage_data(word_hash, word_encrypted, word_frequency):
+def manage_data(dbconn, word_hash, word_encrypted, word_frequency):
     """ Manages inserting and updating process.
 
     param: word_hash(str) Word salted hash
@@ -82,11 +75,11 @@ def manage_data(word_hash, word_encrypted, word_frequency):
  
     words_hashes_list = [element for tupl in words_hashes for element in tupl]
     if word_hash in words_hashes_list:
-        update_word(DBCONN, word_frequency, word_hash)
+        update_word(dbconn, word_frequency, word_hash)
     else:
-        add_word(DBCONN, word_hash, word_encrypted, word_frequency)
+        add_word(dbconn, word_hash, word_encrypted, word_frequency)
 
 
-def get_admin_data():
+def get_admin_data(dbconn):
     """ Returns all data for admin page. """
-    return get_all_words_and_counters(DBCONN)
+    return get_all_words_and_counters(dbconn)

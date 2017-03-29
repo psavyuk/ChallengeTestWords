@@ -4,10 +4,11 @@ This module responsible for gathering words from a web resources,
 preparing them(cutting html tags, scrips and so on), skip prepositions
 and articles, stores data to db and so on.
 """
-
+import os
 import re
 
 from bs4 import BeautifulSoup
+
 from collections import Counter, OrderedDict
 
 import db
@@ -17,8 +18,32 @@ import utils
 EXCEPTIONS = ['AN', 'THE', 'IN', 'ON', 'AT', 'WITH', 'TO', 'FROM', 'AND',
               'FOR', 'OF', 'BY', 'IS', 'AS', 'ARE', 'HOW', 'WHAT', 'THAT',
               'AFTER', 'BEFORE', 'YOU', 'HE', 'WE', 'OFF', 'BE', 'THIS']
-PEM_KEY_LOCATION = '/home/psaviuk/challenge_test/key.pem'
+PEM_KEY_LOCATION = '/home/psavyuk/myapp/ChallengeTestWords/key.pem'
 
+import MySQLdb
+# These environment variables are configured in app.yaml.
+CLOUDSQL_CONNECTION_NAME = os.environ.get('CLOUDSQL_CONNECTION_NAME')
+CLOUDSQL_USER = os.environ.get('CLOUDSQL_USER')
+CLOUDSQL_PASSWORD = os.environ.get('CLOUDSQL_PASSWORD')
+
+
+def connect_to_cloudsql():
+    if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine/'):
+        cloudsql_unix_socket = os.path.join(
+            '/cloudsql', CLOUDSQL_CONNECTION_NAME)
+
+        db = MySQLdb.connect(
+            unix_socket=cloudsql_unix_socket,
+            db='wordschallenge',
+            user=CLOUDSQL_USER,
+            passwd=CLOUDSQL_PASSWORD)
+    else:
+        db = MySQLdb.connect(host='127.0.0.1',
+                             db='wordschallenge',
+                             user=CLOUDSQL_USER,
+                             passwd=CLOUDSQL_PASSWORD)
+
+    return db
 
 class Crawler(object):
     """ Crawler class. """
@@ -74,7 +99,7 @@ class Crawler(object):
 
         word_counts = Counter(cap_words)
         for key, value in word_counts.items():
-            if key not in EXCEPTIONS:
+            if key not in EXCEPTIONS and not key.isdigit():
                 words_dict[key] = value
         return OrderedDict(sorted(words_dict.items(),
                                   key=lambda x: x[1],
@@ -82,6 +107,7 @@ class Crawler(object):
 
     def updates_db_data(self):
         """ Updates db with new data. """
+        #dbconn = connect_to_cloudsql()
         lst = list((self.counters).items())
         for word, counter in lst:
             try:
@@ -89,7 +115,7 @@ class Crawler(object):
                 word_encrypted = \
                     utils.encrypt_RSA(PEM_KEY_LOCATION,
                                       word)
-                db.manage_data(word_hash, word_encrypted, counter)
+                #db.manage_data(dbconn, word_hash, word_encrypted, counter)
             except ValueError as err:
                 print(err)
                 continue
@@ -100,7 +126,8 @@ class Admin(object):
 
     def __init__(self):
         """ Docstring on the __init__ method. """
-        self.data = db.get_admin_data()
+        #dbconn = connect_to_cloudsql()
+        self.data = db.get_admin_data(dbconn)
 
     def get_data(self):
         """ Returns all words from the db. """

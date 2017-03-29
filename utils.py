@@ -47,6 +47,6 @@ def uri_validator(uri):
 
 if __name__ == '__main__':
     test = 'text'
-    enc = encrypt_RSA('/home/psaviuk/challenge_test/key.pem', test)
+    enc = encrypt_RSA('/home/psavyuk/myapp/ChallengeTestWords/key.pem', test)
     #print(enc)
-    #print(decrypt_RSA('/home/psaviuk/challenge_test/key.pem', enc))
+    #print(decrypt_RSA('/home/psavyuk/myapp/ChallengeTestWords/key.pem', enc))
